@@ -16,9 +16,9 @@ function RelativeHumidityTasmotaAccessory(log, config) {
   	this.manufacturer = config['manufacturer'] || "ITEAD";
 	this.model = config['model'] || "Sonoff";
 	this.serialNumberMAC = config['serialNumberMAC'] || "";
-	
+
 	this.sensorPropertyName = config["sensorPropertyName"] || "Sensor";
-	
+
   	this.url = config['url'];
   	this.topic = config['topic'];
   	if (config["activityTopic"] !== undefined) {
@@ -55,7 +55,7 @@ function RelativeHumidityTasmotaAccessory(log, config) {
 	}
 
   this.client  = mqtt.connect(this.url, this.options);
-  
+
     this.client.on('error', function () {
 		that.log('Error event on MQTT');
 	});
@@ -93,6 +93,9 @@ function RelativeHumidityTasmotaAccessory(log, config) {
 		} else if (data.hasOwnProperty("AM2301")) {
 			that.humidity = parseFloat(data.AM2301.Humidity);
 			that.temperature = parseFloat(data.AM2301.Temperature);
+		} else if (data.hasOwnProperty("SI7021")) {
+				that.humidity = parseFloat(data.SI7021.Humidity);
+				that.temperature = parseFloat(data.SI7021.Temperature);
 		} else if (data.hasOwnProperty("DHT11")) {
 			that.humidity = parseFloat(data.DHT11.Humidity);
 			that.temperature = parseFloat(data.DHT11.Temperature);
@@ -109,7 +112,7 @@ function RelativeHumidityTasmotaAccessory(log, config) {
 		that.service.setCharacteristic(Characteristic.CurrentTemperature, that.temperature);
 		that.service.setCharacteristic(Characteristic.CurrentRelativeHumidity, that.humidity);
     } else if (topic == that.activityTopic) {
-    	var status = message.toString(); 	
+    	var status = message.toString();
     	that.activeStat = status == that.activityParameter;
     	that.service.setCharacteristic(Characteristic.StatusActive, that.activeStat);
     }
@@ -119,19 +122,19 @@ function RelativeHumidityTasmotaAccessory(log, config) {
 	this.service
 	    .getCharacteristic(Characteristic.CurrentRelativeHumidity)
 	    .on('get', this.getState.bind(this));
-    
+
 	this.service
 	    .getCharacteristic(Characteristic.CurrentTemperature)
 	    .on('get', this.getTemperature.bind(this));
-    
+
 	this.service
 	    .getCharacteristic(Characteristic.CurrentTemperature)
 	    .setProps({minValue: -50});
-                                                
+
 	this.service
 	    .getCharacteristic(Characteristic.CurrentTemperature)
 	    .setProps({maxValue: 100});
-    
+
 	    if(this.activityTopic !== "") {
 			this.service
 				.getCharacteristic(Characteristic.StatusActive)
